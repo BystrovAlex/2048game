@@ -1,16 +1,12 @@
 #include "widget.h"
 #include "ui_widget.h"
 
-//#include <QGridLayout>
 #include <QVector>
 #include <QPainter>
 #include <QMap>
 #include <QKeyEvent>
-#include <QRandomGenerator>
 #include <QPushButton>
 #include <QFile>
-
-//#include <QThread>
 
 const int WINSCORE = 2048;
 
@@ -19,11 +15,6 @@ Widget::Widget(QWidget *parent)
     , ui(new Ui::Widget)
 {
     ui->setupUi(this);
-    /*field[0]=0; int temp=2;
-    for (int i=1; i<16; i++) {
-        field[i]=temp;
-        temp*=2;
-    }*/
     QFile file("save.dat");
     if (file.open(QIODevice::ReadOnly)) {
         QDataStream in(&file);
@@ -43,8 +34,6 @@ Widget::Widget(QWidget *parent)
         Win = false;
         Reset = true;
     }
-    //CreateNewTile();
-    //CreateNewTile();
     colors[2] = QColor(255, 255, 255);
     colors[4] = QColor(255, 255, 191);
     colors[8] = QColor(255, 255, 127);
@@ -62,7 +51,6 @@ Widget::Widget(QWidget *parent)
     colors[32768] = QColor(80, 0, 0);
     colors[65536] = QColor(40, 0, 0);
     colors[131072] = QColor(0, 0, 0);
-    //grabKeyboard();
 
     button1 = new QPushButton(this);
     button1->setGeometry(60, 515, 80, 30);
@@ -79,14 +67,11 @@ Widget::Widget(QWidget *parent)
     button3->setText(QString("Exit"));
     connect(button3, SIGNAL(clicked()), SLOT(b3()));
 
-
-
 }
 
 void Widget::paintEvent(QPaintEvent *event) {
     Q_UNUSED(event);
     QPainter paint(this);
-    //paint.setBackground(QBrush("#ff0000"));
     QFont font("Helvetica", 20);
     QFontMetrics fm(font);
     paint.setFont(font);
@@ -131,7 +116,8 @@ void Widget::paintEvent(QPaintEvent *event) {
 
 void Widget::keyPressEvent(QKeyEvent *event) {
     int key = event->key();
-    if (key==Qt::Key_Left || key==Qt::Key_A) {
+    int keyL = event->nativeVirtualKey();// key();
+    if (key==Qt::Key_Left || keyL==Qt::Key_A) {
         bool f=false;
         for (int i=0; i<16; i++) {
             if (field[i]==0) continue;
@@ -168,7 +154,7 @@ void Widget::keyPressEvent(QKeyEvent *event) {
         }
         if (f) Game=CreateNewTile();
     }
-    else if (key==Qt::Key_Right || key==Qt::Key_D) {
+    else if (key==Qt::Key_Right || keyL==Qt::Key_D) {
         bool f=false;
         for (int i=15; i>=0; i--) {
             if (field[i]==0) continue;
@@ -205,7 +191,7 @@ void Widget::keyPressEvent(QKeyEvent *event) {
         }
         if (f) Game=CreateNewTile();
     }
-    else if (key==Qt::Key_Up || key==Qt::Key_W) {
+    else if (key==Qt::Key_Up || keyL==Qt::Key_W) {
         bool f=false;
         for (int i=0; i<16; i++) {
             if (field[i]==0) continue;
@@ -242,7 +228,7 @@ void Widget::keyPressEvent(QKeyEvent *event) {
         }
         if (f) Game=CreateNewTile();
     }
-    else if (key==Qt::Key_Down || key==Qt::Key_S) {
+    else if (key==Qt::Key_Down || keyL==Qt::Key_S) {
         bool f=false;
         for (int i=15; i>=0; i--) {
             if (field[i]==0) continue;
@@ -304,11 +290,6 @@ bool Widget::CreateNewTile() {
     }
 }
 
-/*void Widget::b0() {  // Continue
-    grabKeyboard();
-    emit KeyPressed();
-}*/
-
 void Widget::b1() {  // New Game
     for (int i=0; i<16; i++) field[i]=0;
     score=0;
@@ -333,7 +314,6 @@ void Widget::b2() {  // Reset
 }
 
 void Widget::b3() {  // Exit
-    //for (int i=0; i<16; i++) field[i]=0;
     releaseKeyboard();
     QFile file("save.dat");
     if (file.open(QIODevice::WriteOnly)) {

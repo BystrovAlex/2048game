@@ -34,7 +34,6 @@ public slots:
     void KeyPressed() {
         this->repaint();
     }
-    //void b0();
     void b1();
     void b2();
     void b3();
