@@ -131,27 +131,13 @@ void Widget::keyPressEvent(QKeyEvent *event) {
             if ((j%4>0)&&(field[j-1]==field[j])) {
                 field[j-1]*=2;
                 if (field[j-1]==WINSCORE) Win = true;
-                field[j]=1;
+                field[j]=0;
                 score+=field[j-1];
+                field[j-1]--;
                 f=true;
             }
         }
-        for (int i=3; i<16; i+=4) {
-            if (field[i]==1) field[i]=0;
-        }
-        for (int i=2; i<16; i+=4) {
-            if (field[i]==1) {
-                field[i]=field[i+1];
-                field[i+1]=0;
-            }
-        }
-        for (int i=1; i<16; i+=4) {
-            if (field[i]==1) {
-                field[i]=field[i+1];
-                field[i+1]=field[i+2];
-                field[i+2]=0;
-            }
-        }
+        for (int i=0; i<16; i++) if (field[i]%2==1) field[i]++;
         if (f) Game=CreateNewTile();
     }
     else if (key==Qt::Key_Right || keyL==Qt::Key_D) {
@@ -168,27 +154,13 @@ void Widget::keyPressEvent(QKeyEvent *event) {
             if ((j%4<3)&&(field[j+1]==field[j])) {
                 field[j+1]*=2;
                 if (field[j+1]==WINSCORE) Win = true;
-                field[j]=1;
+                field[j]=0;
                 score+=field[j+1];
+                field[j+1]--;
                 f=true;
             }
-            for (int i=0; i<16; i+=4) {
-                if (field[i]==1) field[i]=0;
-            }
-            for (int i=1; i<16; i+=4) {
-                if (field[i]==1) {
-                    field[i]=field[i-1];
-                    field[i-1]=0;
-                }
-            }
-            for (int i=2; i<16; i+=4) {
-                if (field[i]==1) {
-                    field[i]=field[i-1];
-                    field[i-1]=field[i-2];
-                    field[i-2]=0;
-                }
-            }
         }
+        for (int i=0; i<16; i++) if (field[i]%2==1) field[i]++;
         if (f) Game=CreateNewTile();
     }
     else if (key==Qt::Key_Up || keyL==Qt::Key_W) {
@@ -205,27 +177,13 @@ void Widget::keyPressEvent(QKeyEvent *event) {
             if ((j>3)&&(field[j-4]==field[j])) {
                 field[j-4]*=2;
                 if (field[j-4]==WINSCORE) Win = true;
-                field[j]=1;
+                field[j]=0;
                 score+=field[j-4];
+                field[j-4]--;
                 f=true;
             }
-            for (int i=12; i<16; i++) {
-                if (field[i]==1) field[i]=0;
-            }
-            for (int i=8; i<12; i++) {
-                if (field[i]==1) {
-                    field[i]=field[i+4];
-                    field[i+4]=0;
-                }
-            }
-            for (int i=4; i<8; i++) {
-                if (field[i]==1) {
-                    field[i]=field[i+4];
-                    field[i+4]=field[i+8];
-                    field[i+8]=0;
-                }
-            }
         }
+        for (int i=0; i<16; i++) if (field[i]%2==1) field[i]++;
         if (f) Game=CreateNewTile();
     }
     else if (key==Qt::Key_Down || keyL==Qt::Key_S) {
@@ -242,27 +200,13 @@ void Widget::keyPressEvent(QKeyEvent *event) {
             if ((j<12)&&(field[j+4]==field[j])) {
                 field[j+4]*=2;
                 if (field[j+4]==WINSCORE) Win = true;
-                field[j]=1;
+                field[j]=0;
                 score+=field[j+4];
+                field[j+4]--;
                 f=true;
             }
-            for (int i=0; i<4; i++) {
-                if (field[i]==1) field[i]=0;
-            }
-            for (int i=4; i<8; i++) {
-                if (field[i]==1) {
-                    field[i]=field[i-4];
-                    field[i-4]=0;
-                }
-            }
-            for (int i=8; i<12; i++) {
-                if (field[i]==1) {
-                    field[i]=field[i-4];
-                    field[i-4]=field[i-8];
-                    field[i-8]=0;
-                }
-            }
         }
+        for (int i=0; i<16; i++) if (field[i]%2==1) field[i]++;
         if (f) Game=CreateNewTile();
     }
     if (score>highscore) highscore=score;
