@@ -7,8 +7,10 @@
 #include <QKeyEvent>
 #include <QPushButton>
 #include <QFile>
+#include <QRandomGenerator>
 
 const int WINSCORE = 2048;
+const double FOUR_PROB = 0.1;
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
@@ -18,7 +20,8 @@ Widget::Widget(QWidget *parent)
     QFile file("save.dat");
     if (file.open(QIODevice::ReadOnly)) {
         QDataStream in(&file);
-        for (int i=0; i<16; i++) in >> field[i];
+        for (int i=0; i<16; i++)
+            in >> field[i];
         in >> score;
         in >> highscore;
         in >> Game;
@@ -27,7 +30,8 @@ Widget::Widget(QWidget *parent)
         if (Game) grabKeyboard();
         file.close();
     } else {
-        for (int i=0; i<16; i++) field[i]=0;
+        for (int i = 0; i < 16; i++)
+            field[i] = 0;
         score = 0;
         highscore = 0;
         Game = false;
@@ -65,7 +69,7 @@ Widget::Widget(QWidget *parent)
     button3 = new QPushButton(this);
     button3->setGeometry(260, 515, 80, 30);
     button3->setText(QString("Exit"));
-    connect(button3, SIGNAL(clicked()), SLOT(b3()));
+    connect(button3, SIGNAL(clicked()), SLOT(close()));
 
 }
 
@@ -78,35 +82,38 @@ void Widget::paintEvent(QPaintEvent *event) {
     {
         QString tmp = QString("Score:");
         int tmpW = fm.horizontalAdvance(tmp);
-        paint.drawText(100-tmpW/2, 40, tmp);
+        paint.drawText(100 - tmpW/2, 40, tmp);
         tmp = QString("Best:");
         tmpW = fm.horizontalAdvance(tmp);
-        paint.drawText(300-tmpW/2, 40, tmp);
+        paint.drawText(300 - tmpW/2, 40, tmp);
         tmp = QString::number(score);
         tmpW = fm.horizontalAdvance(tmp);
-        paint.drawText(100-tmpW/2, 80, tmp);
+        paint.drawText(100 - tmpW/2, 80, tmp);
         tmp = QString::number(highscore);
         tmpW = fm.horizontalAdvance(tmp);
-        paint.drawText(300-tmpW/2, 80, tmp);
+        paint.drawText(300 - tmpW/2, 80, tmp);
     }
     paint.drawLine(0, 100, 400, 100);
     paint.drawLine(0, 500, 400, 500);
-    for (int i=0; i<16; i++) {
-        if (field[i]>0) {
+    for (int i = 0; i < 16; i++) {
+        if (field[i] > 0) {
             paint.setPen(colors[field[i]]);
             paint.setBrush(colors[field[i]]);
-            paint.drawRoundedRect(2+i%4*100, 102+i/4*100, 96, 96, 10, 10);
+            paint.drawRoundedRect(2 + i%4*100, 102 + i/4*100, 96, 96, 10, 10);
             QString text = QString::number(field[i]);
             int textW = fm.horizontalAdvance(text);
-            if (field[i]<64) paint.setPen(QColor(0, 0, 0));
-            else paint.setPen(QColor(255, 255, 255));
-            paint.drawText(50-textW/2+i%4*100, 160+i/4*100, text);
+            if (field[i] < 64) {
+                paint.setPen(QColor(0, 0, 0));
+            } else {
+                paint.setPen(QColor(255, 255, 255));
+            }
+            paint.drawText(50 - textW/2 + i%4*100, 160 + i/4*100, text);
         }
     }
-    if (!Game&&!Reset) {
+    if (!Game && !Reset) {
         paint.setPen(QColor(255, 0, 0));
         QString tmp = QString("GAME OVER");
-        paint.drawText(380-fm.horizontalAdvance(tmp), 585, tmp);
+        paint.drawText(380 - fm.horizontalAdvance(tmp), 585, tmp);
     }
     if (Win) {
         paint.setPen(QColor(0, 255, 0));
@@ -117,129 +124,141 @@ void Widget::paintEvent(QPaintEvent *event) {
 void Widget::keyPressEvent(QKeyEvent *event) {
     int key = event->key();
     int keyL = event->nativeVirtualKey();// key();
-    if (key==Qt::Key_Left || keyL==Qt::Key_A) {
-        bool f=false;
-        for (int i=0; i<16; i++) {
-            if (field[i]==0) continue;
-            int j=i;
-            while ((j%4>0)&&(field[j-1]==0)) {
-                field[j-1]=field[j];
-                field[j]=0;
+    if (key == Qt::Key_Left || keyL == Qt::Key_A) {
+        bool f = false;
+        for (int i = 0; i < 16; i++) {
+            if (field[i] == 0) continue;
+            int j = i;
+            while ((j%4 > 0) && (field[j-1] == 0)) {
+                field[j-1] = field[j];
+                field[j] = 0;
                 j--;
-                f=true;
+                f = true;
             }
-            if ((j%4>0)&&(field[j-1]==field[j])) {
-                field[j-1]*=2;
-                if (field[j-1]==WINSCORE) Win = true;
-                field[j]=0;
-                score+=field[j-1];
+            if ((j%4 > 0) && (field[j-1] == field[j])) {
+                field[j-1] *= 2;
+                if (field[j-1] == WINSCORE) Win = true;
+                field[j] = 0;
+                score += field[j-1];
                 field[j-1]--;
-                f=true;
+                f = true;
             }
         }
-        for (int i=0; i<16; i++) if (field[i]%2==1) field[i]++;
+        for (int i = 0; i < 16; i++) {
+            if (field[i] % 2 == 1) field[i]++;
+        }
         if (f) Game=CreateNewTile();
-    }
-    else if (key==Qt::Key_Right || keyL==Qt::Key_D) {
-        bool f=false;
-        for (int i=15; i>=0; i--) {
-            if (field[i]==0) continue;
-            int j=i;
-            while ((j%4<3)&&(field[j+1]==0)) {
-                field[j+1]=field[j];
-                field[j]=0;
+    } else if (key == Qt::Key_Right || keyL == Qt::Key_D) {
+        bool f = false;
+        for (int i = 15; i >= 0; i--) {
+            if (field[i] == 0) continue;
+            int j = i;
+            while ((j % 4 < 3) && (field[j+1] == 0)) {
+                field[j+1] = field[j];
+                field[j] = 0;
                 j++;
-                f=true;
+                f = true;
             }
-            if ((j%4<3)&&(field[j+1]==field[j])) {
-                field[j+1]*=2;
-                if (field[j+1]==WINSCORE) Win = true;
-                field[j]=0;
-                score+=field[j+1];
+            if ((j % 4 < 3) && (field[j+1] == field[j])) {
+                field[j+1] *= 2;
+                if (field[j+1] == WINSCORE) Win = true;
+                field[j] = 0;
+                score += field[j+1];
                 field[j+1]--;
-                f=true;
+                f = true;
             }
         }
-        for (int i=0; i<16; i++) if (field[i]%2==1) field[i]++;
+        for (int i = 0; i < 16; i++) {
+            if (field[i] % 2 == 1) field[i]++;
+        }
         if (f) Game=CreateNewTile();
-    }
-    else if (key==Qt::Key_Up || keyL==Qt::Key_W) {
-        bool f=false;
-        for (int i=0; i<16; i++) {
-            if (field[i]==0) continue;
-            int j=i;
-            while ((j>3)&&(field[j-4]==0)) {
-                field[j-4]=field[j];
-                field[j]=0;
-                j-=4;
-                f=true;
+    } else if (key == Qt::Key_Up || keyL == Qt::Key_W) {
+        bool f = false;
+        for (int i = 0; i < 16; i++) {
+            if (field[i] == 0) continue;
+            int j = i;
+            while ((j > 3) && (field[j-4] == 0)) {
+                field[j-4] = field[j];
+                field[j] = 0;
+                j -= 4;
+                f = true;
             }
-            if ((j>3)&&(field[j-4]==field[j])) {
-                field[j-4]*=2;
-                if (field[j-4]==WINSCORE) Win = true;
-                field[j]=0;
-                score+=field[j-4];
+            if ((j > 3) && (field[j-4] == field[j])) {
+                field[j-4] *= 2;
+                if (field[j-4] == WINSCORE) Win = true;
+                field[j] = 0;
+                score += field[j-4];
                 field[j-4]--;
-                f=true;
+                f = true;
             }
         }
-        for (int i=0; i<16; i++) if (field[i]%2==1) field[i]++;
-        if (f) Game=CreateNewTile();
-    }
-    else if (key==Qt::Key_Down || keyL==Qt::Key_S) {
-        bool f=false;
-        for (int i=15; i>=0; i--) {
-            if (field[i]==0) continue;
-            int j=i;
-            while ((j<12)&&(field[j+4]==0)) {
-                field[j+4]=field[j];
-                field[j]=0;
-                j+=4;
-                f=true;
+        for (int i = 0; i < 16; i++) {
+            if (field[i] % 2 == 1) field[i]++;
+        }
+        if (f) Game = CreateNewTile();
+    } else if (key == Qt::Key_Down || keyL == Qt::Key_S) {
+        bool f = false;
+        for (int i = 15; i >= 0; i--) {
+            if (field[i] == 0) continue;
+            int j = i;
+            while ((j < 12) && (field[j+4] == 0)) {
+                field[j+4] = field[j];
+                field[j] = 0;
+                j += 4;
+                f = true;
             }
-            if ((j<12)&&(field[j+4]==field[j])) {
-                field[j+4]*=2;
-                if (field[j+4]==WINSCORE) Win = true;
-                field[j]=0;
-                score+=field[j+4];
+            if ((j < 12) && (field[j+4] == field[j])) {
+                field[j+4] *= 2;
+                if (field[j+4] == WINSCORE) Win = true;
+                field[j] = 0;
+                score += field[j+4];
                 field[j+4]--;
-                f=true;
+                f = true;
             }
         }
-        for (int i=0; i<16; i++) if (field[i]%2==1) field[i]++;
+        for (int i = 0; i < 16; i++) {
+            if (field[i] % 2 == 1) field[i]++;
+        }
         if (f) Game=CreateNewTile();
     }
-    if (score>highscore) highscore=score;
+    if (score > highscore) highscore = score;
     if (!Game) releaseKeyboard();
     emit KeyPressed();
-
 }
 
+
 bool Widget::CreateNewTile() {
-    srand(time(NULL));
-    int tile = rand()%10;
     QVector<int> empty;
-    for (int i=0; i<16; i++) if (field[i]==0) empty.push_back(i);
-    int place = rand()%empty.size();
-    if (tile == 0) field[empty[place]] = 4;
-    else field[empty[place]] = 2;
-    if (empty.size()>1) return true;
-    else {
-        bool f=false;
-        for (int i=0; i<15; i++) {
-            if (((i+1)%4>0)&&(field[i]==field[i+1])) f=true;
-            if (((i+4)<16)&&(field[i]==field[i+4])) f=true;
+    for (int i = 0; i < 16; i++) {
+        if (field[i] == 0) {
+            empty.push_back(i);
+        }
+    }
+    int place = QRandomGenerator::global()->bounded(empty.size());
+    if (QRandomGenerator::global()->bounded(1.0) < FOUR_PROB) {
+        field[empty[place]] = 4;
+    } else {
+        field[empty[place]] = 2;
+    }
+    if (empty.size() > 1) {
+        return true;
+    } else {
+        bool f = false;
+        for (int i = 0; i < 15; i++) {
+            if ((i % 4 < 3) && (field[i] == field[i+1])) f = true;
+            if ((i + 4 < 16) && (field[i] == field[i+4])) f = true;
         }
         return f;
     }
 }
 
 void Widget::b1() {  // New Game
-    for (int i=0; i<16; i++) field[i]=0;
-    score=0;
-    Game=true;
-    Win=false;
-    Reset=false;
+    for (int i = 0; i < 16; i++)
+        field[i] = 0;
+    score = 0;
+    Game = true;
+    Win = false;
+    Reset = false;
     CreateNewTile();
     CreateNewTile();
     grabKeyboard();
@@ -247,22 +266,24 @@ void Widget::b1() {  // New Game
 }
 
 void Widget::b2() {  // Reset
-    for (int i=0; i<16; i++) field[i]=0;
-    score=0;
-    highscore=0;
-    Win=false;
-    Game=false;
-    Reset=true;
+    for (int i = 0; i < 16; i++)
+        field[i] = 0;
+    score = 0;
+    highscore = 0;
+    Win = false;
+    Game = false;
+    Reset = true;
     releaseKeyboard();
     emit KeyPressed();
 }
 
-void Widget::b3() {  // Exit
+void Widget::closeEvent(QCloseEvent *event) {
     releaseKeyboard();
     QFile file("save.dat");
     if (file.open(QIODevice::WriteOnly)) {
         QDataStream out(&file);
-        for (int i=0; i<16; i++) out << field[i];
+        for (int i = 0; i < 16; i++)
+            out << field[i];
         out << score;
         out << highscore;
         out << Game;
@@ -270,9 +291,9 @@ void Widget::b3() {  // Exit
         out << Reset;
         file.close();
     }
-
-    exit(0);
+    event->accept();
 }
+
 
 Widget::~Widget()
 {

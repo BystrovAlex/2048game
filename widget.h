@@ -29,6 +29,7 @@ private:
 protected:
     void paintEvent(QPaintEvent *event);
     virtual void keyPressEvent(QKeyEvent *event);
+    void closeEvent(QCloseEvent *event);
 
 public slots:
     void KeyPressed() {
@@ -36,7 +37,6 @@ public slots:
     }
     void b1();
     void b2();
-    void b3();
 
 };
 #endif // WIDGET_H
